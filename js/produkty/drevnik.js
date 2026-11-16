@@ -37,7 +37,10 @@ window.Truhla = window.Truhla || {};
 
   T.produkty.drevnik = {
     id: 'drevnik',
-    nazev: 'Dřevník – přístřešek na dříví',
+    nazev: 'Dřevník',
+    podtitul: 'přístřešek s pultovou střechou, sloupky a pozednice',
+    narocnost: 2,
+    kategorie: 'dilna',
     // materiálové varianty: hrubé řezivo z pily, nebo KVH (hoblované, sušené, rovné – dražší)
     predvolby: [{ skupina: 'Materiál a cena', moznosti: [
       { nazev: 'Hrubé řezivo', popis: 'smrkové hranoly a fošny z pily – nejlevnější, nehoblované, vlhké (sesychá a kroutí se)',
@@ -48,14 +51,14 @@ window.Truhla = window.Truhla || {};
     parametry: [
       { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', typ: 'cislo', min: 1500, max: 8000, krok: 50, vychozi: 3000 },
       { klic: 'hloubka', nazev: 'Hloubka', typ: 'cislo', min: 600, max: 2500, krok: 10, vychozi: 1200 },
-      { klic: 'vyskaPredni', nazev: 'Výška vpředu (horní hrana pozednice)', typ: 'cislo', min: 1200, max: 3200, krok: 10, vychozi: 2200 },
-      { klic: 'vyskaZadni', nazev: 'Výška vzadu (horní hrana pozednice)', typ: 'cislo', min: 1000, max: 3200, krok: 10, vychozi: 1900 },
-      { pokrocile: true, klic: 'rozponMax', nazev: 'Největší rozpon pole', typ: 'cislo', min: 800, max: 3000, krok: 50, vychozi: 1600 },
+      { klic: 'vyskaPredni', nazev: 'Výška vpředu', napoveda: 'horní hrana pozednice', typ: 'cislo', min: 1200, max: 3200, krok: 10, vychozi: 2200 },
+      { klic: 'vyskaZadni', nazev: 'Výška vzadu', napoveda: 'horní hrana pozednice', typ: 'cislo', min: 1000, max: 3200, krok: 10, vychozi: 1900 },
+      { pokrocile: true, klic: 'rozponMax', nazev: 'Největší rozpon pole', skupina: 'Nosná konstrukce', typ: 'cislo', min: 800, max: 3000, krok: 50, vychozi: 1600 },
 
       { skupina: 'Materiál', pokrocile: true, klic: 'matSloupek', nazev: 'Sloupky', typ: 'material', vychozi: 'demos-262639' },
       { pokrocile: true, klic: 'matPozednice', nazev: 'Pozednice a boční příčle', typ: 'material', vychozi: 'demos-262649' },
       { pokrocile: true, klic: 'matKrokev', nazev: 'Krokve', typ: 'material', vychozi: 'demos-308043' },
-      { pokrocile: true, klic: 'matLat', nazev: 'Střešní latě (na plocho)', typ: 'material', vychozi: 'demos-262642' },
+      { pokrocile: true, klic: 'matLat', nazev: 'Střešní latě', napoveda: 'na plocho', typ: 'material', vychozi: 'demos-262642' },
       { pokrocile: true, klic: 'matCelo', nazev: 'Čelní a závětrná prkna', typ: 'material', vychozi: 'demos-305364' },
       { pokrocile: true, klic: 'matObklad', nazev: 'Obklad stěn', typ: 'material', vychozi: 'demos-305364' },
       { pokrocile: true, klic: 'matRam', nazev: 'Podlahový rám', typ: 'material', vychozi: 'demos-262639', kdyz: p => p.podlaha },
@@ -63,23 +66,23 @@ window.Truhla = window.Truhla || {};
       { pokrocile: true, klic: 'matPaska', nazev: 'Pásky', typ: 'material', vychozi: 'demos-262659', kdyz: p => p.pasky },
 
       { skupina: 'Střecha', pokrocile: true, klic: 'roztecKrokvi', nazev: 'Rozteč krokví', typ: 'cislo', min: 300, max: 1000, krok: 10, vychozi: 600 },
-      { pokrocile: true, klic: 'roztecLati', nazev: 'Rozteč latí (podle krytiny)', typ: 'cislo', min: 200, max: 1000, krok: 10, vychozi: 500 },
+      { pokrocile: true, klic: 'roztecLati', nazev: 'Rozteč latí', napoveda: 'podle krytiny', typ: 'cislo', min: 200, max: 1000, krok: 10, vychozi: 500 },
       { pokrocile: true, klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 800, krok: 10, vychozi: 300 },
       { pokrocile: true, klic: 'presahZadni', nazev: 'Přesah vzadu', typ: 'cislo', min: 0, max: 600, krok: 10, vychozi: 150 },
       { pokrocile: true, klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 600, krok: 10, vychozi: 150 },
 
-      { skupina: 'Podlaha', zakladSkupina: 'Výbava', klic: 'podlaha', nazev: 'Podlaha na rámu', typ: 'prepinac', vychozi: true },
+      { skupina: 'Podlaha', klic: 'podlaha', nazev: 'Podlaha', napoveda: 'na rámu', typ: 'prepinac', vychozi: true },
       { pokrocile: true, klic: 'roztecTramku', nazev: 'Rozteč příčných trámků', typ: 'cislo', min: 300, max: 1200, krok: 10, vychozi: 600, kdyz: p => p.podlaha },
       { pokrocile: true, klic: 'mezeraPodlaha', nazev: 'Mezera mezi prkny podlahy', typ: 'cislo', min: 0, max: 50, krok: 1, vychozi: 10, kdyz: p => p.podlaha },
 
-      { skupina: 'Obklad', zakladSkupina: 'Výbava', klic: 'obklad', nazev: 'Obložit', typ: 'volba', vychozi: 'zada',
+      { skupina: 'Obklad', klic: 'obklad', nazev: 'Obklad', typ: 'volba', vychozi: 'zada',
         moznosti: [['zada', 'Jen zadní stěnu'], ['zadaBoky', 'Zadní stěnu a boky'], ['zadny', 'Bez obkladu']] },
       { pokrocile: true, klic: 'mezeraObklad', nazev: 'Mezera mezi prkny', typ: 'cislo', min: 0, max: 80, krok: 1, vychozi: 20, kdyz: p => p.obklad !== 'zadny' },
-      { pokrocile: true, klic: 'obkladStit', nazev: 'Boky i nad příčlí (svislá prkna až pod střechu)', typ: 'prepinac', vychozi: true, kdyz: p => p.obklad === 'zadaBoky' },
+      { pokrocile: true, klic: 'obkladStit', nazev: 'Obložit i štít', napoveda: 'svislá prkna až pod střechu', sekce: 'provedeni', typ: 'prepinac', vychozi: true, kdyz: p => p.obklad === 'zadaBoky' },
 
-      { skupina: 'Pásky', zakladSkupina: 'Výbava', klic: 'pasky', nazev: 'Pásky (šikmé vzpěry 45°)', typ: 'prepinac', vychozi: true },
-      { pokrocile: true, klic: 'paskyZadni', nazev: 'Pásky i v zadní řadě', typ: 'prepinac', vychozi: true, kdyz: p => p.pasky },
-      { pokrocile: true, klic: 'paskyBoky', nazev: 'Pásky i na bocích', typ: 'prepinac', vychozi: true, kdyz: p => p.pasky },
+      { skupina: 'Pásky', klic: 'pasky', nazev: 'Pásky', napoveda: 'šikmé vzpěry 45°', typ: 'prepinac', vychozi: true },
+      { pokrocile: true, klic: 'paskyZadni', nazev: 'Pásky i v zadní řadě', sekce: 'provedeni', typ: 'prepinac', vychozi: true, kdyz: p => p.pasky },
+      { pokrocile: true, klic: 'paskyBoky', nazev: 'Pásky i na bocích', sekce: 'provedeni', typ: 'prepinac', vychozi: true, kdyz: p => p.pasky },
       { pokrocile: true, klic: 'paskaRameno', nazev: 'Rameno pásku', typ: 'cislo', min: 200, max: 1000, krok: 10, vychozi: 400, kdyz: p => p.pasky },
     ],
 

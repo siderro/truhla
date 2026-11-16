@@ -15,7 +15,10 @@ window.Truhla = window.Truhla || {};
 
   T.produkty['lavice-ram'] = {
     id: 'lavice-ram',
-    nazev: 'Lavice rámová – trámky, zavětrování, výplně v drážkách',
+    nazev: 'Rámová lavice',
+    podtitul: 'sloupky a luby na čep a dlab, šikmé vzpěry, výplně v drážkách',
+    narocnost: 3,
+    kategorie: 'lavice',
     predvolby: [
       { skupina: 'Výplně', moznosti: [
         { nazev: 'Překližka', popis: 'stěny a dno z vodovzdorné obalové překližky – drží tvar, hrany se nedrolí', params: { matStena: PREKLIZKA12, matDno: PREKLIZKA18 } },
@@ -24,25 +27,25 @@ window.Truhla = window.Truhla || {};
       Object.assign(sadaDreva(['matSedak']), { skupina: 'Sedák' }),
     ],
     parametry: [
-      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka (rám)', typ: 'cislo', min: 500, max: 2500, krok: 10, vychozi: 1340 },
-      { klic: 'hloubka', nazev: 'Hloubka (rám)', typ: 'cislo', min: 300, max: 700, krok: 10, vychozi: 400 },
-      { klic: 'vyska', nazev: 'Výška sedáku (vč. desky)', typ: 'cislo', min: 300, max: 700, krok: 5, vychozi: 480 },
+      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', napoveda: 'vnější rozměr rámu', typ: 'cislo', min: 500, max: 2500, krok: 10, vychozi: 1340 },
+      { klic: 'hloubka', nazev: 'Hloubka', napoveda: 'vnější rozměr rámu', typ: 'cislo', min: 300, max: 700, krok: 10, vychozi: 400 },
+      { klic: 'vyska', nazev: 'Výška sezení', napoveda: 'včetně sedáku', typ: 'cislo', min: 300, max: 700, krok: 5, vychozi: 480 },
       { klic: 'zavetrovani', nazev: 'Zavětrování', typ: 'volba', vychozi: 'vsechny',
         moznosti: [['vsechny', 'Šikmé vzpěry uvnitř všech stěn'], ['bokyZada', 'Jen boky a záda (vpředu víc místa uvnitř)'], ['zadne', 'Bez vzpěr']] },
-      { pokrocile: true, klic: 'nozky', nazev: 'Dolní lub nad podlahou', typ: 'cislo', min: 0, max: 200, krok: 5, vychozi: 50 },
+      { pokrocile: true, klic: 'nozky', nazev: 'Dolní lub nad podlahou', skupina: 'Rám', typ: 'cislo', min: 0, max: 200, krok: 5, vychozi: 50 },
 
       { skupina: 'Materiál', pokrocile: true, klic: 'matSloupek', nazev: 'Sloupky', typ: 'material', vychozi: 'demos-262545' },
-      { pokrocile: true, klic: 'matLub', nazev: 'Luby (horní a dolní)', typ: 'material', vychozi: 'demos-262545' },
-      { pokrocile: true, klic: 'matVzpera', nazev: 'Vzpěry (na plocho)', typ: 'material', vychozi: 'demos-262646', kdyz: p => p.zavetrovani !== 'zadne' },
-      { pokrocile: true, klic: 'matStena', nazev: 'Stěny (deska)', typ: 'material', vychozi: PREKLIZKA12 },
-      { pokrocile: true, klic: 'matDno', nazev: 'Dno (deska)', typ: 'material', vychozi: PREKLIZKA18 },
-      { pokrocile: true, klic: 'matSedak', nazev: 'Sedák (masiv)', typ: 'material', vychozi: SMRK },
+      { pokrocile: true, klic: 'matLub', nazev: 'Luby', napoveda: 'horní a dolní', typ: 'material', vychozi: 'demos-262545' },
+      { pokrocile: true, klic: 'matVzpera', nazev: 'Vzpěry', napoveda: 'na plocho', typ: 'material', vychozi: 'demos-262646', kdyz: p => p.zavetrovani !== 'zadne' },
+      { pokrocile: true, klic: 'matStena', nazev: 'Výplně stěn', typ: 'material', vychozi: PREKLIZKA12 },
+      { pokrocile: true, klic: 'matDno', nazev: 'Dno', typ: 'material', vychozi: PREKLIZKA18 },
+      { pokrocile: true, klic: 'matSedak', nazev: 'Sedák', napoveda: 'masiv', typ: 'material', vychozi: SMRK },
 
       { skupina: 'Drážky a čepy', pokrocile: true, klic: 'drazkaHloubka', nazev: 'Hloubka drážky', typ: 'cislo', min: 5, max: 20, krok: 1, vychozi: 12 },
-      { pokrocile: true, klic: 'drazkaVule', nazev: 'Vůle desky v drážce (na stranu)', typ: 'cislo', min: 0, max: 3, krok: 0.5, vychozi: 1 },
+      { pokrocile: true, klic: 'drazkaVule', nazev: 'Vůle v drážce', napoveda: 'na stranu', typ: 'cislo', min: 0, max: 3, krok: 0.5, vychozi: 1 },
       { pokrocile: true, klic: 'cepDelka', nazev: 'Délka čepu lubu', typ: 'cislo', min: 15, max: 50, krok: 1, vychozi: 30 },
 
-      { skupina: 'Sedák', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 60, max: 400, krok: 5, vychozi: 120 },
+      { skupina: 'Sedák', pokrocile: true, klic: 'vikoPevna', nazev: 'Pevný pás sedáku u zad', napoveda: 'nese pant', typ: 'cislo', min: 60, max: 400, krok: 5, vychozi: 120 },
       { pokrocile: true, klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
       { pokrocile: true, klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
     ],
@@ -334,15 +337,18 @@ window.Truhla = window.Truhla || {};
   const zakl = T.produkty['lavice-ram'];
   T.produkty['lavice-ram-prkna'] = {
     id: 'lavice-ram-prkna',
-    nazev: 'Lavice rámová jednoduchá – luby na tupo, skrytá výztužná prkna',
+    nazev: 'Rámová lavice bez čepů',
+    podtitul: 'luby na tupo na kolíky nebo vruty, skrytá výztužná prkna',
+    narocnost: 1,
+    kategorie: 'lavice',
     predvolby: zakl.predvolby,
     parametry: zakl.parametry
       .filter(x => x.klic !== 'zavetrovani' && x.klic !== 'cepDelka')
-      .map(x => x.klic === 'matVzpera' ? Object.assign({}, x, { nazev: 'Výztužná prkna (na stojato)', vychozi: 'demos-305364', kdyz: undefined }) : x)
+      .map(x => x.klic === 'matVzpera' ? Object.assign({}, x, { nazev: 'Výztužná prkna', napoveda: 'na stojato', vychozi: 'demos-305364', kdyz: undefined }) : x)
       .concat([
-        { skupina: 'Spoje', klic: 'spoj', nazev: 'Lub ke sloupku', typ: 'volba', vychozi: 'koliky',
+        { sekce: 'provedeni', klic: 'spoj', nazev: 'Spoj lubu se sloupkem', typ: 'volba', vychozi: 'koliky',
           moznosti: [['koliky', 'Kolíky Ø8 (neviditelné, klížené)'], ['vruty', 'Vruty zvenku skrz sloupek, zátky']] },
-        { klic: 'sirkaPrkna', nazev: 'Šířka výztužného prkna', typ: 'cislo', min: 50, max: 160, krok: 5, vychozi: 80 },
+        { pokrocile: true, skupina: 'Rám', klic: 'sirkaPrkna', nazev: 'Šířka výztužného prkna', typ: 'cislo', min: 50, max: 160, krok: 5, vychozi: 80 },
       ]),
     generuj(p, M) {
       return zakl.generuj(Object.assign({}, p, { zavetrovani: 'prkna', tupy: true }), M);

@@ -7,7 +7,6 @@ window.Truhla = window.Truhla || {};
   const M = T.materialy;
   let stav = null;
   let naplanovano = false;
-  let pokrocileOtevrene = false;
   let popiskyKloubu = ['Otevřít víko', 'Zavřít víko'];
   let posledniNarez = null;                       // pro export objednávky
   const VYCHOZI_PRODUKT = 'lavice-truhla-luby'; // nejsnazší na ruční výrobu
@@ -15,7 +14,7 @@ window.Truhla = window.Truhla || {};
   const produkt = () => T.produkty[stav.produkt];
   // parametry společné všem výrobkům
   const SPOLECNE = [
-    { skupina: 'Výroba', klic: 'pocet', nazev: 'Počet kusů', typ: 'cislo', min: 1, max: 20, krok: 1, vychozi: 1, jednotka: 'ks' },
+    { sekce: 'material', klic: 'pocet', nazev: 'Počet kusů', typ: 'cislo', min: 1, max: 20, krok: 1, vychozi: 1, jednotka: 'ks' },
   ];
   const parametry = () => produkt().parametry.concat(SPOLECNE);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -36,9 +35,12 @@ window.Truhla = window.Truhla || {};
     SPOLECNE.concat(pr.parametry).forEach(d => { if (d.typ === 'material') s.params[d.klic] = M.normalizuj(s.params[d.klic]); });
     stav = s;
     $('produkt').value = stav.produkt;
+    const pr2 = produkt();
+    $('popisProduktu').innerHTML = (pr2.narocnost ? `<span class="narocnost n${pr2.narocnost}">${NAROCNOST[pr2.narocnost]}</span> ` : '') + esc(pr2.podtitul || '');
     $('nazevProjektu').value = stav.nazev || '';
     vykresliFormular();
     prepocitej();
+    cenyVariant();
   }
 
   function toast(text) {
@@ -50,6 +52,9 @@ window.Truhla = window.Truhla || {};
   }
 
   // ---------- formulář ----------
+  // Panel shora: Výrobek → Rozměry → Provedení (výbava, závislá pole odsazená) → Materiál (varianty s cenou,
+  // počet kusů) → Podrobné nastavení (každá skupina zvlášť sbalená, počet změn, návrat k výchozím).
+  // Formulář se staví jen při změně výrobku; předvolba / načtení projektu jen přepíše hodnoty (synchronizuj).
   function prvek(tag, atributy) {
     const e = document.createElement(tag);
     Object.entries(atributy || {}).forEach(([k, v]) => { e[k] = v; });
@@ -57,99 +62,141 @@ window.Truhla = window.Truhla || {};
   }
 
   const kc = x => Math.round(x).toLocaleString('cs-CZ') + ' Kč';
+  const NAROCNOST = { 1: 'snadné', 2: 'střední', 3: 'náročné' };
+  const KATEGORIE = [['lavice', 'Lavice s úložným prostorem'], ['dilna', 'Dílna a zahrada']];
+  const SJEDNOCENE = { 'Ozuby': 'Spoje', 'Čepy a drážky': 'Spoje', 'Drážky a čepy': 'Spoje' };
+  const MAT_PO_DILECH = 'Materiál po dílech';
+  const tvarZmen = n => `${n} ${n === 1 ? 'změna' : n < 5 ? 'změny' : 'změn'}`;
 
-  function vyberMaterialu(hodnota) {
+  // stav rozbalení skupin podle výrobku – jen v prohlížeči, ne v projektu
+  const UI_KLIC = 'truhla.ui.v1';
+  let ui = {};
+  try { ui = JSON.parse(localStorage.getItem(UI_KLIC)) || {}; } catch (e) { /* bez úložiště */ }
+  const ulozUi = () => { try { localStorage.setItem(UI_KLIC, JSON.stringify(ui)); } catch (e) { /* bez úložiště */ } };
+
+  // výběr materiálu: jen desky nebo jen řezivo (podle výchozího materiálu dílu), lamino jen když je zvolené
+  const typMat = d => d.typMat || (M.najdi(M.normalizuj(d.vychozi)) || {}).typ || 'oba';
+  const LAMINO = /^Lamino/;
+  const popisSkupiny = s => {
+    const deska = s.typ === 'deska';
+    return s.nazev + (s.cenaOd ? ` · od ${kc(s.cenaOd)}/${deska ? 'm²' : 'bm'}` : '');
+  };
+  function vyberMaterialu(hodnota, typ) {
     const sel = prvek('select');
+    const sedi = m => typ === 'oba' || m.typ === typ;
     const skupiny = new Map([
-      ['Vlastní – desky', M.vlastni().filter(m => m.typ === 'deska')],
-      ['Vlastní – řezivo', M.vlastni().filter(m => m.typ === 'rezivo')],
+      ['Moje desky', M.vlastni().filter(m => m.typ === 'deska' && sedi(m))],
+      ['Moje řezivo', M.vlastni().filter(m => m.typ === 'rezivo' && sedi(m))],
     ]);
-    // katalog po skupinách materiál + kvalita + tloušťka; formát volí nářez
     M.skupiny().forEach(s => {
+      if (!sedi(s) || (LAMINO.test(s.kategorie) && s.id !== hodnota)) return;
       const k = s.dodavatel + ' – ' + s.kategorie;
       if (!skupiny.has(k)) skupiny.set(k, []);
       skupiny.get(k).push(s);
     });
-    const popisSkupiny = s => {
-      const f = s.formaty, deska = s.typ === 'deska';
-      const formaty = f.length > 1 ? `${f.length} ${deska ? 'formáty' : 'délky'}`
-        : deska ? `${f[0].formatD}×${f[0].formatS}` : `${f[0].delka} mm`;
-      return `${s.nazev} – ${formaty}` + (s.cenaOd ? `, od ${kc(s.cenaOd)}/${deska ? 'm²' : 'bm'}` : '');
-    };
     skupiny.forEach((list, popis) => {
       if (!list.length) return;
       const og = prvek('optgroup', { label: popis });
       list.forEach(m => og.append(new Option(m.skupina ? popisSkupiny(m) : m.nazev, m.id)));
       sel.append(og);
     });
-    sel.value = hodnota;
-    if (sel.value !== hodnota) sel.append(new Option('(chybí v knihovně)', hodnota, true, true));
     return sel;
   }
+  function nastavVyber(sel, hodnota) {
+    sel.value = hodnota;
+    if (sel.value !== hodnota) {
+      sel.append(new Option('Materiál už v knihovně není – vyber náhradu', hodnota, true, true));
+      sel.value = hodnota;
+    }
+  }
 
-  function radek(d) {
+  function popisek(d, id) {
+    const lab = prvek('label', { htmlFor: id, textContent: d.nazev });
+    if (d.napoveda) lab.append(' ', prvek('span', { className: 'napoveda', textContent: d.napoveda }));
+    return lab;
+  }
+
+  // řádek parametru; r._nastav(v) přepíše zobrazenou hodnotu bez překreslení
+  function radek(d, sTahlem) {
     const r = prvek('div', { className: 'pole pole-' + d.typ });
     r.dataset.klic = d.klic;
     const id = 'p-' + d.klic;
-    const v = stav.params[d.klic];
 
     if (d.typ === 'prepinac') {
-      const cb = prvek('input', { type: 'checkbox', id, checked: !!v });
+      const cb = prvek('input', { type: 'checkbox', id });
       cb.addEventListener('change', () => nastav(d, cb.checked));
-      const lab = prvek('label', { htmlFor: id, textContent: d.nazev });
-      r.append(cb, lab);
-      return r;
-    }
-
-    r.append(prvek('label', { htmlFor: id, textContent: d.nazev }));
-    if (d.typ === 'cislo') {
-      const ovl = prvek('div', { className: 'ovladac' });
-      const tahlo = prvek('input', { type: 'range', min: d.min, max: d.max, step: d.krok, value: v, tabIndex: -1 });
-      tahlo.setAttribute('aria-label', d.nazev + ' – táhlo');
-      const pole = prvek('input', { type: 'number', id, step: d.krok, value: v, min: 0 });
-      tahlo.addEventListener('input', () => { pole.value = tahlo.value; nastav(d, +tahlo.value); });
+      r.append(cb, popisek(d, id));
+      r._nastav = v => { cb.checked = !!v; };
+    } else if (d.typ === 'cislo') {
+      r.append(popisek(d, id));
+      const ovl = prvek('div', { className: 'ovladac' + (sTahlem ? '' : ' bez-tahla') });
+      const pole = prvek('input', { type: 'number', id, step: d.krok, min: d.min, max: d.max });
+      const jed = prvek('span', { className: 'jednotka', id: id + '-j', textContent: d.jednotka || 'mm' });
+      pole.setAttribute('aria-describedby', jed.id);
+      let tahlo = null;
+      if (sTahlem) {
+        tahlo = prvek('input', { type: 'range', min: d.min, max: d.max, step: d.krok, tabIndex: -1 });
+        tahlo.setAttribute('aria-hidden', 'true');
+        tahlo.addEventListener('input', () => { pole.value = tahlo.value; nastav(d, +tahlo.value); });
+        ovl.append(tahlo);
+      }
       pole.addEventListener('input', () => {
         const x = pole.valueAsNumber;
         if (!Number.isFinite(x)) return;
-        tahlo.value = x; // táhlo se zarazí na kraji rozsahu, platí hodnota z pole
+        if (tahlo) tahlo.value = x;
         nastav(d, x);
       });
-      pole.addEventListener('change', () => { if (!Number.isFinite(pole.valueAsNumber)) pole.value = stav.params[d.klic]; });
-      ovl.append(tahlo, pole, prvek('span', { className: 'jednotka', textContent: d.jednotka || 'mm' }));
+      // po opuštění pole: prázdné vrátit, mimo rozsah zarazit na kraj
+      pole.addEventListener('change', () => {
+        const x = pole.valueAsNumber;
+        if (!Number.isFinite(x)) { r._nastav(stav.params[d.klic]); return; }
+        const y = Math.min(d.max, Math.max(d.min, x));
+        if (y !== x) { r._nastav(y); nastav(d, y); toast(`${d.nazev}: rozsah ${d.min}–${d.max} ${d.jednotka || 'mm'}`); }
+      });
+      ovl.append(pole, jed);
       r.append(ovl);
-    } else if (d.typ === 'material' || d.typ === 'volba') {
-      const sel = d.typ === 'material' ? vyberMaterialu(v) : prvek('select');
-      if (d.typ === 'volba') {
-        d.moznosti.forEach(([hod, popis]) => sel.append(new Option(popis, hod)));
-        sel.value = v;
-      }
+      r._nastav = v => { pole.value = v; if (tahlo) tahlo.value = v; };
+    } else {
+      r.append(popisek(d, id));
+      const sel = d.typ === 'material' ? vyberMaterialu(stav.params[d.klic], typMat(d)) : prvek('select');
+      if (d.typ === 'volba') d.moznosti.forEach(([hod, popis]) => sel.append(new Option(popis, hod)));
       sel.id = id;
       sel.addEventListener('change', () => nastav(d, sel.value));
       r.append(sel);
+      r._nastav = v => nastavVyber(sel, v);
     }
+    r._nastav(stav.params[d.klic]);
     return r;
   }
 
-  // ---------- předvolby (praktické velikosti, dřevo) ----------
+  // ---------- předvolby (materiálové varianty s cenou) ----------
   const predvolbaParams = m => Object.fromEntries(Object.entries(m.params)
     .map(([k, v]) => [k, typeof v === 'string' ? M.normalizuj(v) : v]));
+  const predvolbaSedi = m => Object.entries(predvolbaParams(m)).every(([k, v]) => stav.params[k] === v);
 
   function vykresliPredvolby(f) {
-    (produkt().predvolby || []).forEach(sk => {
+    const skupiny = produkt().predvolby || [];
+    skupiny.forEach((sk, i) => {
       const box = prvek('div', { className: 'predvolby' });
-      const tlacitka = prvek('div', { className: 'predvolby-tlacitka' });
+      const tlacitka = prvek('div', { className: 'predvolby-tlacitka', role: 'group' });
+      if (skupiny.length > 1) {
+        const nadpis = prvek('div', { className: 'predvolby-nadpis', id: 'predvolby-' + i, textContent: sk.skupina });
+        tlacitka.setAttribute('aria-labelledby', nadpis.id);
+        box.append(nadpis);
+      } else tlacitka.setAttribute('aria-label', 'Materiálová varianta');
       sk.moznosti.forEach(m => {
-        const b = prvek('button', { type: 'button', className: 'predvolba', title: m.popis });
+        const b = prvek('button', { type: 'button', className: 'predvolba' });
         b.append(prvek('span', { className: 'predvolba-nazev', textContent: m.nazev }), prvek('span', { className: 'predvolba-cena' }));
         b.addEventListener('click', () => {
           Object.assign(stav.params, predvolbaParams(m));
-          vykresliFormular();
+          synchronizuj();
           prepocitej();
+          cenyVariant();
         });
         b._predvolba = m;
         tlacitka.append(b);
       });
-      box.append(prvek('div', { className: 'predvolby-nadpis', textContent: sk.skupina }), tlacitka, prvek('p', { className: 'predvolby-popis' }));
+      box.append(tlacitka, prvek('p', { className: 'predvolby-popis' }));
       f.append(box);
     });
   }
@@ -159,15 +206,16 @@ window.Truhla = window.Truhla || {};
     document.querySelectorAll('#formular .predvolby').forEach(box => {
       let aktivni = null;
       box.querySelectorAll('.predvolba').forEach(b => {
-        const shoda = Object.entries(predvolbaParams(b._predvolba)).every(([k, v]) => stav.params[k] === v);
+        const shoda = predvolbaSedi(b._predvolba);
         b.classList.toggle('aktivni', shoda);
+        b.setAttribute('aria-pressed', shoda);
         if (shoda && !aktivni) aktivni = b._predvolba;
       });
-      box.querySelector('.predvolby-popis').textContent = aktivni ? aktivni.popis : 'vlastní nastavení';
+      box.querySelector('.predvolby-popis').textContent = aktivni ? aktivni.popis : 'Vlastní kombinace – materiál zvolený po dílech.';
     });
   }
 
-  // Cena materiálu pro každou variantu při současných rozměrech (s odkladem, ať táhlo nezasekává)
+  // Cena materiálu pro každou variantu při současných rozměrech – jen po dokončené změně, ne při tažení táhla
   let casovacCen = null;
   function cenyVariant() {
     clearTimeout(casovacCen);
@@ -185,41 +233,117 @@ window.Truhla = window.Truhla || {};
     }, 250);
   }
 
-  // Základní parametry ve skupinách nahoře, pokročilé (pokrocile: true) sbalené pod „Další nastavení“
+  // rozřazení parametrů do sekcí; parametr může sekci (rozmery/provedeni/material/detail) určit sám,
+  // jinak: materiály a pokročilé do podrobností, čísla ze skupiny Rozměry nahoru, ostatní do provedení
+  function rozrad() {
+    let sk = 'Ostatní';
+    return parametry().map(d => {
+      if (d.skupina) sk = d.skupina;
+      let sekce = d.sekce;
+      if (!sekce) sekce = d.typ === 'material' || d.pokrocile ? 'detail' : d.typ === 'cislo' && sk === 'Rozměry' ? 'rozmery' : 'provedeni';
+      const skupina = d.typ === 'material' ? MAT_PO_DILECH : SJEDNOCENE[sk] || sk;
+      return { d, sekce, skupina };
+    });
+  }
+
+  // výchozí hodnoty pro porovnání „změněno“: výchozí parametry + aktivní materiálové varianty
+  function zaklad() {
+    const z = vychoziParametry(produkt());
+    parametry().forEach(d => { if (d.typ === 'material') z[d.klic] = M.normalizuj(z[d.klic]); });
+    (produkt().predvolby || []).forEach(sk => {
+      const m = sk.moznosti.find(predvolbaSedi);
+      if (m) Object.assign(z, predvolbaParams(m));
+    });
+    return z;
+  }
+
   function vykresliFormular() {
     const f = $('formular');
     f.innerHTML = '';
-    vykresliPredvolby(f);
-    const det = prvek('details', { className: 'pokrocile', open: pokrocileOtevrene });
-    det.append(prvek('summary', { textContent: 'Další nastavení – materiály, spoje, detaily' }));
-    det.addEventListener('toggle', () => { pokrocileOtevrene = det.open; });
-    const skupiny = new Map();
-    let sk = 'Parametry';
-    for (const d of parametry()) {
-      if (d.skupina) sk = d.skupina;
-      const nazev = d.pokrocile ? sk : (d.zakladSkupina || sk);
-      const klic = (d.pokrocile ? 'P:' : 'Z:') + nazev;
-      if (!skupiny.has(klic)) {
-        const fs = prvek('fieldset');
-        fs.append(prvek('legend', { textContent: nazev }));
-        skupiny.set(klic, fs);
-        (d.pokrocile ? det : f).append(fs);
-      }
-      skupiny.get(klic).append(radek(d));
+    const roz = rozrad();
+    const sekce = (nazev, trida) => {
+      const fs = prvek('fieldset', { className: 'sekce ' + (trida || '') });
+      fs.append(prvek('legend', { textContent: nazev }));
+      f.append(fs);
+      return fs;
+    };
+    const v = s => roz.filter(x => x.sekce === s);
+    if (v('rozmery').length) { const fs = sekce('Rozměry'); v('rozmery').forEach(x => fs.append(radek(x.d, true))); }
+    if (v('provedeni').length) {
+      const fs = sekce('Provedení');
+      v('provedeni').forEach(x => { const r = radek(x.d, true); if (x.d.kdyz) r.classList.add('zavisle'); fs.append(r); });
     }
-    if (det.children.length > 1) f.append(det);
+    const fsM = sekce('Materiál', 'sekce-material');
+    vykresliPredvolby(fsM);
+    v('material').forEach(x => fsM.append(radek(x.d, false)));
+
+    const skupiny = new Map();
+    v('detail').forEach(x => {
+      if (!skupiny.has(x.skupina)) skupiny.set(x.skupina, []);
+      skupiny.get(x.skupina).push(x.d);
+    });
+    const nazvy = [...skupiny.keys()].sort((a, b) => (b === MAT_PO_DILECH) - (a === MAT_PO_DILECH));
+    if (nazvy.length) {
+      f.append(prvek('h2', { className: 'podrobne-nadpis', textContent: 'Podrobné nastavení' }));
+      const otevrene = (ui[stav.produkt] || {}).otevrene || [];
+      nazvy.forEach(nazev => {
+        const det = prvek('details', { className: 'skupina', open: otevrene.includes(nazev) });
+        det.dataset.skupina = nazev;
+        const sum = prvek('summary');
+        sum.append(prvek('span', { className: 'skupina-nazev', textContent: nazev }), prvek('span', { className: 'skupina-zmeny' }));
+        const telo = prvek('div', { className: 'skupina-telo' });
+        skupiny.get(nazev).forEach(d => telo.append(radek(d, false)));
+        const zpet = prvek('button', { type: 'button', className: 'maly skupina-zpet', textContent: 'Vrátit výchozí hodnoty' });
+        zpet.addEventListener('click', () => {
+          const z = zaklad();
+          skupiny.get(nazev).forEach(d => { stav.params[d.klic] = z[d.klic]; });
+          synchronizuj();
+          prepocitej();
+          cenyVariant();
+        });
+        telo.append(zpet);
+        det.append(sum, telo);
+        det.addEventListener('toggle', () => {
+          ui[stav.produkt] = { otevrene: [...f.querySelectorAll('details.skupina[open]')].map(x => x.dataset.skupina) };
+          ulozUi();
+        });
+        f.append(det);
+      });
+    }
+    aktualizujViditelnost();
+    aktualizujPredvolby();
+  }
+
+  // přepíše hodnoty ve formuláři podle stavu (po předvolbě, návratu k výchozím)
+  function synchronizuj() {
+    document.querySelectorAll('#formular .pole').forEach(r => r._nastav(stav.params[r.dataset.klic]));
     aktualizujViditelnost();
     aktualizujPredvolby();
   }
 
   function aktualizujViditelnost() {
     for (const d of parametry()) {
-      const r = document.querySelector(`.pole[data-klic="${d.klic}"]`);
+      const r = document.querySelector(`#formular .pole[data-klic="${d.klic}"]`);
       if (r) r.hidden = d.kdyz ? !d.kdyz(stav.params) : false;
     }
-    // skupina, ve které je všechno skryté, se nezobrazí
-    document.querySelectorAll('#formular fieldset').forEach(fs => {
+    // sekce / skupina, ve které je všechno skryté, se nezobrazí
+    document.querySelectorAll('#formular fieldset.sekce:not(.sekce-material), #formular details.skupina').forEach(fs => {
       fs.hidden = ![...fs.querySelectorAll('.pole')].some(r => !r.hidden);
+    });
+  }
+
+  // tečka u změněné hodnoty a počet změn v hlavičce skupiny
+  function aktualizujZmeny() {
+    const z = zaklad();
+    document.querySelectorAll('#formular .pole').forEach(r => {
+      const zmena = !r.hidden && stav.params[r.dataset.klic] !== z[r.dataset.klic];
+      r.classList.toggle('zmeneno', zmena);
+      r.title = zmena ? `Změněno, výchozí: ${z[r.dataset.klic] === true ? 'ano' : z[r.dataset.klic] === false ? 'ne' : (M.najdi(z[r.dataset.klic]) || {}).nazev || z[r.dataset.klic]}` : '';
+    });
+    document.querySelectorAll('#formular details.skupina').forEach(det => {
+      const n = det.querySelectorAll('.pole.zmeneno').length;
+      det.querySelector('.skupina-zmeny').textContent = n ? tvarZmen(n) : '';
+      det.querySelector('.skupina-zpet').hidden = !n;
     });
   }
 
@@ -253,7 +377,7 @@ window.Truhla = window.Truhla || {};
     T.cepy.vykresli($('tab-cepy'), v.vykresy, pocet);
     vykresliSouhrn(v, narez, pocet);
     aktualizujPredvolby();
-    cenyVariant();
+    aktualizujZmeny();
     $('varovani').innerHTML = v.varovani.map(t => `<div class="upozorneni">${esc(t)}</div>`).join('')
       + narez.chyby.map(t => `<div class="chyba">${esc(t)}</div>`).join('');
     $('rozmery').textContent = v.souhrn;
@@ -360,6 +484,7 @@ window.Truhla = window.Truhla || {};
   function poZmeneMaterialu() {
     vykresliFormular();
     prepocitej();
+    cenyVariant();
   }
 
   function navazKnihovnu() {
@@ -451,16 +576,18 @@ window.Truhla = window.Truhla || {};
   // ---------- start ----------
   function init() {
     const sel = $('produkt');
-    // doporučený výrobek první
-    Object.values(T.produkty).sort((a, b) => (b.id === VYCHOZI_PRODUKT) - (a.id === VYCHOZI_PRODUKT))
-      .forEach(p => sel.add(new Option(p.nazev, p.id)));
+    // výrobky po kategoriích, doporučený první
+    const vyrobky = Object.values(T.produkty).sort((a, b) => (b.id === VYCHOZI_PRODUKT) - (a.id === VYCHOZI_PRODUKT));
+    KATEGORIE.concat([[undefined, 'Ostatní']]).forEach(([k, popis]) => {
+      const list = vyrobky.filter(p => p.kategorie === k || (k === undefined && !KATEGORIE.some(([x]) => x === p.kategorie)));
+      if (!list.length) return;
+      const og = prvek('optgroup', { label: popis });
+      list.forEach(p => og.append(new Option(p.nazev, p.id)));
+      sel.append(og);
+    });
     sel.addEventListener('change', () => nastavStav(novyStav(sel.value)));
-
-    // zdroj ceníku (později přepínač mezi dodavateli)
-    const z = M.zdroj();
-    $('zdrojDat').innerHTML = z
-      ? `Ceník: <strong>${esc(z.nazev)}</strong> · <a href="${esc(z.url)}" target="_blank" rel="noopener">${esc(z.web)}</a> · staženo ${new Date(z.stazeno).toLocaleDateString('cs-CZ')}`
-      : 'Ceník: jen vlastní materiály';
+    // ukládání úprav po dokončené změně přepočítá ceny variant
+    $('formular').addEventListener('change', () => cenyVariant());
 
     document.querySelectorAll('.zalozky button').forEach(b => b.addEventListener('click', () => {
       document.querySelectorAll('.zalozky button, .tab').forEach(x => x.classList.remove('aktivni'));

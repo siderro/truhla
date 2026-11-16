@@ -22,7 +22,10 @@ window.Truhla = window.Truhla || {};
 
   T.produkty.koza = {
     id: 'koza',
-    nazev: 'Koza skládací – dva rámy na pantech',
+    nazev: 'Skládací koza',
+    podtitul: 'dva rámy na pantech, řetízky proti rozjetí',
+    narocnost: 2,
+    kategorie: 'dilna',
     predvolby: [{ skupina: 'Materiál a cena', moznosti: [
       { nazev: 'Hrubé řezivo', popis: 'trámy z omítané fošny, nohy a příčky z latí – nejlevnější, nehoblované',
         params: { matNosnik: 'demos-308043', matNoha: 'demos-262642', matPricka: 'demos-262646' } },
@@ -30,14 +33,14 @@ window.Truhla = window.Truhla || {};
         params: { matNosnik: 'demos-459805', matNoha: 'demos-361760', matPricka: 'demos-262646' } },
     ] }],
     parametry: [
-      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka trámů', typ: 'cislo', min: 400, max: 2000, krok: 5, vychozi: 800 },
-      { klic: 'vyska', nazev: 'Výška (pracovní hrana nahoře)', typ: 'cislo', min: 400, max: 1100, krok: 5, vychozi: 750 },
-      { klic: 'rozkrok', nazev: 'Rozkročení dole (vnější líce nohou)', typ: 'cislo', min: 250, max: 900, krok: 5, vychozi: 560 },
-      { pokrocile: true, klic: 'presahNosniku', nazev: 'Přesah trámu přes nohy', typ: 'cislo', min: 0, max: 300, krok: 5, vychozi: 70 },
-      { pokrocile: true, klic: 'rozevreni', nazev: 'Rozevření nohou do strany (dole, každá)', typ: 'cislo', min: 0, max: 200, krok: 5, vychozi: 0 },
+      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', napoveda: 'horní trámy', typ: 'cislo', min: 400, max: 2000, krok: 5, vychozi: 800 },
+      { klic: 'vyska', nazev: 'Výška', napoveda: 'horní hrana trámu', typ: 'cislo', min: 400, max: 1100, krok: 5, vychozi: 750 },
+      { klic: 'rozkrok', nazev: 'Rozkročení dole', napoveda: 'vnější líce nohou', typ: 'cislo', min: 250, max: 900, krok: 5, vychozi: 560 },
+      { pokrocile: true, klic: 'presahNosniku', nazev: 'Přesah trámu přes nohy', skupina: 'Nohy a trámy', typ: 'cislo', min: 0, max: 300, krok: 5, vychozi: 70 },
+      { pokrocile: true, klic: 'rozevreni', nazev: 'Rozevření do strany', napoveda: 'dole, každá noha', typ: 'cislo', min: 0, max: 200, krok: 5, vychozi: 0 },
       { pokrocile: true, klic: 'vyskaPricky', nazev: 'Dolní příčka od země', typ: 'cislo', min: 50, max: 400, krok: 5, vychozi: 150 },
 
-      { skupina: 'Materiál', pokrocile: true, klic: 'matNosnik', nazev: 'Horní trámy (na hranu)', typ: 'material', vychozi: 'demos-308043' },
+      { skupina: 'Materiál', pokrocile: true, klic: 'matNosnik', nazev: 'Horní trámy', napoveda: 'na hranu', typ: 'material', vychozi: 'demos-308043' },
       { pokrocile: true, klic: 'matNoha', nazev: 'Nohy', typ: 'material', vychozi: 'demos-262642' },
       { pokrocile: true, klic: 'matPricka', nazev: 'Dolní příčky', typ: 'material', vychozi: 'demos-262646' },
     ],

@@ -94,7 +94,10 @@ window.Truhla = window.Truhla || {};
 
   T.produkty['lavice-truhla-luby'] = {
     id: 'lavice-truhla-luby',
-    nazev: 'Lavice-truhla s luby – doporučeno',
+    nazev: 'Truhla s luby',
+    podtitul: 'ozuby v rozích, dno v drážce – doporučeno pro začátek',
+    narocnost: 2,
+    kategorie: 'lavice',
     predvolby: [
       sadaDreva(['matCelo', 'matBok', 'matViko', 'matZada', 'matSokl'],
         { matCelo: SMRK, matViko: SMRK, matBok: OSB18, matZada: OSB12, matDno: OSB12, matSokl: OSB18 }),
@@ -102,7 +105,7 @@ window.Truhla = window.Truhla || {};
     parametry: [
       { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', typ: 'cislo', min: 400, max: 2500, krok: 10, vychozi: 1340 },
       { klic: 'hloubka', nazev: 'Hloubka', typ: 'cislo', min: 250, max: 800, krok: 10, vychozi: 400 },
-      { klic: 'vyska', nazev: 'Výška sedáku (vč. víka)', typ: 'cislo', min: 250, max: 700, krok: 5, vychozi: 480 },
+      { klic: 'vyska', nazev: 'Výška sezení', napoveda: 'včetně víka', typ: 'cislo', min: 250, max: 700, krok: 5, vychozi: 480 },
       { klic: 'sokl', nazev: 'Sokl', typ: 'prepinac', vychozi: true },
 
       // dno zůstává z OSB: masivní dno by v drážce pracovalo (bobtná napříč vláknem)
@@ -110,8 +113,8 @@ window.Truhla = window.Truhla || {};
       { pokrocile: true, klic: 'matBok', nazev: 'Boky', typ: 'material', vychozi: SMRK },
       { pokrocile: true, klic: 'matViko', nazev: 'Víko', typ: 'material', vychozi: SMRK },
       { pokrocile: true, klic: 'matZada', nazev: 'Záda', typ: 'material', vychozi: SMRK },
-      { pokrocile: true, klic: 'matDno', nazev: 'Dno (deska, ne masiv)', typ: 'material', vychozi: 'demos-00314' },
-      { pokrocile: true, klic: 'matLub', nazev: 'Luby', typ: 'material', vychozi: 'demos-262642' },
+      { pokrocile: true, klic: 'matDno', nazev: 'Dno', napoveda: 'deska', typ: 'material', vychozi: 'demos-00314' },
+      { pokrocile: true, klic: 'matLub', nazev: 'Luby', typMat: 'oba', typ: 'material', vychozi: 'demos-262642' },
       { pokrocile: true, klic: 'matSokl', nazev: 'Sokl', typ: 'material', vychozi: SMRK, kdyz: p => p.sokl },
 
       { skupina: 'Čepy a drážky', pokrocile: true, klic: 'cepSirka', nazev: 'Šířka čepu', typ: 'cislo', min: 15, max: 150, krok: 1, vychozi: 40 },
@@ -120,18 +123,18 @@ window.Truhla = window.Truhla || {};
       { pokrocile: true, klic: 'dnoOdspodu', nazev: 'Dno od spodní hrany', typ: 'cislo', min: 0, max: 150, krok: 1, vychozi: 20, kdyz: p => p.lubUmisteni !== 'pod' },
       { pokrocile: true, klic: 'zadaOdsazeni', nazev: 'Záda od zadní hrany boku', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 10 },
 
-      { skupina: 'Luby', pokrocile: true, klic: 'lubUmisteni', nazev: 'Umístění', typ: 'volba', vychozi: 'nad',
+      { skupina: 'Luby', pokrocile: true, klic: 'lubUmisteni', nazev: 'Umístění lubů', typ: 'volba', vychozi: 'nad',
         moznosti: [['nad', 'Uvnitř nad dnem (u čela a u zad)'], ['pod', 'Pod dnem (nesou dno, dno leží na nich)']] },
       { pokrocile: true, klic: 'lubNadDnem', nazev: 'Přední lub nad dnem', typ: 'cislo', min: 0, max: 300, krok: 5, vychozi: 0, kdyz: p => p.lubUmisteni !== 'pod' },
       { pokrocile: true, klic: 'lubVyska', nazev: 'Výška lubu', typ: 'cislo', min: 15, max: 150, krok: 1, vychozi: 60 },
-      { pokrocile: true, klic: 'lubHloubka', nazev: 'Tloušťka lubu (od stěny)', typ: 'cislo', min: 15, max: 100, krok: 1, vychozi: 40, kdyz: p => !jeDeska(p.matLub) },
+      { pokrocile: true, klic: 'lubHloubka', nazev: 'Tloušťka lubu', napoveda: 'od stěny', typ: 'cislo', min: 15, max: 100, krok: 1, vychozi: 40, kdyz: p => !jeDeska(p.matLub) },
 
-      { skupina: 'Víko', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 40, max: 400, krok: 5, vychozi: 120 },
-      { klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
-      { klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
+      { skupina: 'Víko', pokrocile: true, klic: 'vikoPevna', nazev: 'Pevný pás víka u zad', napoveda: 'nese panty', typ: 'cislo', min: 40, max: 400, krok: 5, vychozi: 120 },
+      { klic: 'presahPredni', nazev: 'Přesah vpředu', pokrocile: true, typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
+      { klic: 'presahBoky', nazev: 'Přesah na bocích', pokrocile: true, typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
 
       { skupina: 'Sokl', pokrocile: true, klic: 'soklVyska', nazev: 'Výška soklu', typ: 'cislo', min: 30, max: 200, krok: 5, vychozi: 80, kdyz: p => p.sokl },
-      { pokrocile: true, klic: 'soklOdsazeni', nazev: 'Odsazení soklu', typ: 'cislo', min: 0, max: 100, krok: 1, vychozi: 30, kdyz: p => p.sokl },
+      { pokrocile: true, klic: 'soklOdsazeni', nazev: 'Ustoupení soklu', typ: 'cislo', min: 0, max: 100, krok: 1, vychozi: 30, kdyz: p => p.sokl },
     ],
 
     generuj(p, M) {

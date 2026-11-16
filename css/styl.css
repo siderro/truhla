@@ -95,8 +95,12 @@ aside {
 
 /* Formulář */
 .vyber-produktu { display: grid; gap: 4px; font-weight: 600; margin-bottom: 10px; }
-.zdroj { margin: -4px 0 10px; padding: 5px 8px; border-radius: 6px; background: var(--deska-bg); border: 1px solid var(--okraj); color: var(--tlumeny); font-size: 12px; }
-.zdroj a { color: inherit; }
+.vyber-produktu { margin-bottom: 4px; }
+.vyber-produktu select { font-weight: 600; padding: 7px 8px; }
+.popis-produktu { margin: 0 0 14px; color: var(--tlumeny); font-size: 12px; line-height: 1.5; }
+.narocnost { display: inline-block; padding: 0 7px; border-radius: 10px; font-size: 11px; font-weight: 600; border: 1px solid var(--okraj); background: var(--deska-bg); color: var(--text); }
+.narocnost.n1 { border-color: #7fae6e; }
+.narocnost.n3 { border-color: #c98a5a; }
 fieldset {
   border: 1px solid var(--okraj);
   border-radius: 8px;
@@ -107,6 +111,16 @@ legend { font-weight: 600; padding: 0 4px; color: var(--akcent); }
 .pole { margin: 6px 0; }
 .pole[hidden] { display: none; }
 .pole > label { display: block; color: var(--tlumeny); font-size: 13px; margin-bottom: 2px; }
+.napoveda { font-size: 12px; opacity: 0.75; }
+.napoveda::before { content: '· '; }
+/* změněná hodnota proti výchozí (nebo zvolené variantě): tečka za popiskem */
+.pole.zmeneno > label::after { content: ' ●'; color: var(--akcent); font-size: 9px; vertical-align: 2px; }
+/* pole závislé na přepínači nad ním */
+.pole.zavisle { margin-left: 8px; padding-left: 12px; border-left: 2px solid var(--okraj); }
+/* bez táhla: popisek vlevo, pole vpravo na jednom řádku */
+.pole-cislo:has(.bez-tahla) { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.pole-cislo:has(.bez-tahla) > label { margin: 0; }
+.ovladac.bez-tahla { grid-template-columns: 78px 26px; }
 .pole select { width: 100%; }
 .pole-prepinac { display: flex; align-items: center; gap: 8px; }
 .pole-prepinac > label { margin: 0; color: var(--text); font-size: 14px; }
@@ -238,9 +252,17 @@ figcaption { color: var(--tlumeny); font-size: 12px; margin-top: 4px; }
 fieldset[hidden] { display: none; }
 
 /* Pokročilá nastavení */
-details.pokrocile { border-top: 1px solid var(--okraj); padding-top: 8px; }
-details.pokrocile > summary { cursor: pointer; font-weight: 600; color: var(--tlumeny); padding: 4px 0 10px; }
-details.pokrocile[open] > summary { color: var(--text); }
+.sekce-material .predvolby:last-of-type { margin-bottom: 4px; }
+.podrobne-nadpis { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--tlumeny); margin: 18px 0 8px; }
+details.skupina { border: 1px solid var(--okraj); border-radius: 8px; margin: 0 0 6px; }
+details.skupina[hidden] { display: none; }
+details.skupina > summary { cursor: pointer; padding: 7px 12px; font-weight: 600; display: flex; gap: 8px; align-items: baseline; }
+details.skupina > summary::marker { color: var(--tlumeny); }
+details.skupina[open] > summary { border-bottom: 1px solid var(--okraj); }
+.skupina-zmeny { margin-left: auto; color: var(--akcent); font-weight: 400; font-size: 12px; }
+.skupina-telo { padding: 4px 12px 10px; }
+.skupina-zpet { margin-top: 8px; font-size: 12px; }
+.skupina-zpet[hidden] { display: none; }
 
 /* Menu projektu */
 details.menu { position: relative; }

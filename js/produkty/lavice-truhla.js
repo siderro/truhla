@@ -281,7 +281,10 @@ window.Truhla = window.Truhla || {};
 
   T.produkty['lavice-truhla'] = {
     id: 'lavice-truhla',
-    nazev: 'Lavice-truhla na přímé ozuby – náročné',
+    nazev: 'Truhla na ozuby',
+    podtitul: 'přímé ozuby v rozích, dno v dlabech, volitelně opěradlo',
+    narocnost: 3,
+    kategorie: 'lavice',
     tipNarocnost: 'Průchozí dlaby pro dno jsou ručně nejpracnější část (každý navrtat a vydlabat z obou stran). Méně práce: větší šířka čepu v Dalším nastavení, nebo výrobek „Lavice-truhla s luby“, kde je dno v drážce.',
     predvolby: [
       sadaDreva(['matCelo', 'matBok', 'matDno', 'matViko', 'matSokl', 'matOperadlo'],
@@ -290,7 +293,7 @@ window.Truhla = window.Truhla || {};
     parametry: [
       { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', typ: 'cislo', min: 400, max: 2500, krok: 10, vychozi: 1340 },
       { klic: 'hloubka', nazev: 'Hloubka', typ: 'cislo', min: 250, max: 800, krok: 10, vychozi: 400 },
-      { klic: 'vyska', nazev: 'Výška sedáku (vč. víka)', typ: 'cislo', min: 250, max: 700, krok: 5, vychozi: 480 },
+      { klic: 'vyska', nazev: 'Výška sezení', napoveda: 'včetně víka', typ: 'cislo', min: 250, max: 700, krok: 5, vychozi: 480 },
 
       { skupina: 'Sokl a opěradlo', klic: 'sokl', nazev: 'Sokl', typ: 'prepinac', vychozi: true },
       { klic: 'operadlo', nazev: 'Opěradlo', typ: 'prepinac', vychozi: false },
@@ -306,12 +309,12 @@ window.Truhla = window.Truhla || {};
       { skupina: 'Ozuby', pokrocile: true, klic: 'cepSirka', nazev: 'Šířka čepu', typ: 'cislo', min: 15, max: 150, krok: 1, vychozi: 40 },
       { pokrocile: true, klic: 'dnoOdspodu', nazev: 'Dno od spodní hrany', typ: 'cislo', min: 0, max: 100, krok: 1, vychozi: 20 },
 
-      { skupina: 'Víko', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 40, max: 400, krok: 5, vychozi: 120 },
-      { klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
-      { klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
+      { skupina: 'Víko', pokrocile: true, klic: 'vikoPevna', nazev: 'Pevný pás víka u zad', napoveda: 'nese panty', typ: 'cislo', min: 40, max: 400, krok: 5, vychozi: 120 },
+      { klic: 'presahPredni', nazev: 'Přesah vpředu', pokrocile: true, typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
+      { klic: 'presahBoky', nazev: 'Přesah na bocích', pokrocile: true, typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
 
       { skupina: 'Sokl', pokrocile: true, klic: 'soklVyska', nazev: 'Výška soklu', typ: 'cislo', min: 30, max: 200, krok: 5, vychozi: 80, kdyz: p => p.sokl },
-      { pokrocile: true, klic: 'soklOdsazeni', nazev: 'Odsazení soklu', typ: 'cislo', min: 0, max: 100, krok: 1, vychozi: 30, kdyz: p => p.sokl },
+      { pokrocile: true, klic: 'soklOdsazeni', nazev: 'Ustoupení soklu', typ: 'cislo', min: 0, max: 100, krok: 1, vychozi: 30, kdyz: p => p.sokl },
     ],
 
     // starší projekty měly jeden materiál pro celý korpus
