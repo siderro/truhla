@@ -7,6 +7,14 @@ window.Truhla = window.Truhla || {};
   const MM = 0.001;
   let THREE, renderer, scene, camera, controls, model, klouby = [], el;
   let vikoUhel = 0, vikoCil = 0, data = null, posledni = null;
+  let postavy = null, postavyVidet = true;
+  const KLIC_POSTAVY = 'truhla.postavy.v1';
+  try { postavyVidet = localStorage.getItem(KLIC_POSTAVY) !== '0'; } catch (e) { /* bez úložiště */ }
+  // figuríny pro měřítko: výška v mm, šířka ramen a boků (podíl výšky), stojí vlevo od výrobku
+  const POSTAVY = [
+    { nazev: 'muž', vyska: 1800, ramena: 0.25, boky: 0.19, trup: 0.09, barva: '#8f9aa6' },
+    { nazev: 'žena', vyska: 1650, ramena: 0.22, boky: 0.21, trup: 0.08, barva: '#a99aa6' },
+  ];
 
   const css = (nazev, vychozi) => getComputedStyle(document.documentElement).getPropertyValue(nazev).trim() || vychozi;
 
@@ -143,13 +151,64 @@ window.Truhla = window.Truhla || {};
       }
     }
     scene.add(model);
+    postavPostavy((minX - cx) * MM);
     // nový výrobek = jiná velikost, kamera se přenastaví
     if (data.klic !== posledni) { vychoziPohled(); posledni = data.klic; }
+  }
+
+  // stylizovaná figurína z kapslí a koulí, chodidla na zemi v [x, 0, z], čelem dopředu (+z); rozměry v m
+  function figurina(f, x) {
+    const H = f.vyska * MM, g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: f.barva, roughness: 0.9 });
+    const kapsle = (a, b, r, sz = 1) => {
+      const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), smer = B.clone().sub(A);
+      const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, Math.max(0.001, smer.length()), 4, 12), mat);
+      m.position.copy(A).add(B).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), smer.normalize());
+      m.scale.z = sz;
+      g.add(m);
+    };
+    const koule = (p, r, s = [1, 1, 1]) => {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat);
+      m.position.set(...p); m.scale.set(...s);
+      g.add(m);
+    };
+    const rn = 0.034 * H, ra = 0.022 * H;          // poloměr nohy a paže
+    const kycel = 0.5 * H, rameno = 0.815 * H, bx = f.boky * H / 2 - rn, sx = f.ramena * H / 2;
+    [-1, 1].forEach(s => {
+      kapsle([s * bx * 0.8, rn, 0.01 * H], [s * bx, kycel, 0], rn);              // noha
+      koule([s * bx * 0.8, 0.012 * H, 0.04 * H], 0.03 * H, [0.9, 0.4, 1.6]);     // chodidlo
+      kapsle([s * sx, rameno - ra, 0], [s * (sx + 0.03 * H), 0.45 * H, 0.01 * H], ra);   // paže
+    });
+    koule([0, kycel + 0.02 * H, 0], f.boky * H / 2, [1, 0.7, 0.62]);           // pánev
+    kapsle([0, kycel + 0.1 * H, 0], [0, rameno - f.trup * H * 0.5, 0], f.trup * H, 0.62);  // trup
+    kapsle([-sx, rameno - ra, 0], [sx, rameno - ra, 0], ra * 1.15, 0.8);        // ramena
+    kapsle([0, rameno, 0], [0, 0.875 * H, 0], 0.024 * H);                         // krk
+    koule([0, 0.935 * H, 0.004 * H], 0.06 * H, [0.88, 1.12, 1]);                  // hlava
+    g.position.set(x, 0, 0);
+    g.userData.sirka = Math.max(f.ramena, f.boky) * H + 2 * 0.03 * H;
+    return g;
+  }
+
+  // vlevo od výrobku (xLevy = levý okraj modelu v m): žena blíž, muž za ní
+  function postavPostavy(xLevy) {
+    if (postavy) { scene.remove(postavy); uvolni(postavy); }
+    postavy = new THREE.Group();
+    let x = xLevy - 0.35;
+    POSTAVY.slice().reverse().forEach(f => {
+      const fig = figurina(f, 0);
+      fig.position.x = x - fig.userData.sirka / 2;
+      x -= fig.userData.sirka + 0.25;
+      postavy.add(fig);
+    });
+    postavy.visible = postavyVidet;
+    scene.add(postavy);
   }
 
   function vychoziPohled() {
     if (!model) return;
     const box = new THREE.Box3().setFromObject(model);
+    if (postavy && postavy.visible) box.union(new THREE.Box3().setFromObject(postavy));
     const stred = box.getCenter(new THREE.Vector3());
     const vel = box.getSize(new THREE.Vector3());
     const dist = Math.max(vel.x, vel.y, vel.z) * 2.4 + 0.3;
@@ -173,6 +232,15 @@ window.Truhla = window.Truhla || {};
       return vikoCil === 1;
     },
     kloubOtevren: () => vikoCil === 1,
+    prepniPostavy() {
+      postavyVidet = !postavyVidet;
+      try { localStorage.setItem(KLIC_POSTAVY, postavyVidet ? '1' : '0'); } catch (e) { /* bez úložiště */ }
+      if (postavy) postavy.visible = postavyVidet;
+      vychoziPohled();
+      return postavyVidet;
+    },
+    postavyVidet: () => postavyVidet,
+    popisPostav: () => POSTAVY.map(f => `${f.nazev} ${f.vyska / 10} cm`).join(', '),
     vychoziPohled,
     pripraven: () => !!THREE,
   };

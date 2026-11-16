@@ -9,6 +9,7 @@ window.Truhla = window.Truhla || {};
   let naplanovano = false;
   let pokrocileOtevrene = false;
   let popiskyKloubu = ['Otevřít víko', 'Zavřít víko'];
+  let posledniNarez = null;                       // pro export objednávky
   const VYCHOZI_PRODUKT = 'lavice-truhla-luby'; // nejsnazší na ruční výrobu
 
   const produkt = () => T.produkty[stav.produkt];
@@ -246,6 +247,7 @@ window.Truhla = window.Truhla || {};
     }
     const pocet = Math.max(1, Math.round(stav.params.pocet || 1));
     const narez = T.narez.spocitej(v.dily, M, pocet);
+    posledniNarez = narez;
     T.kusovnik.vykresli($('tab-kusovnik'), v.dily, M, pocet);
     T.narez.vykresli($('tab-spotreba'), narez);
     T.cepy.vykresli($('tab-cepy'), v.vykresy, pocet);
@@ -470,6 +472,21 @@ window.Truhla = window.Truhla || {};
       e.target.textContent = popiskyKloubu[T.viewer.prepniViko() ? 1 : 0];
     });
     $('btnPohled').addEventListener('click', () => T.viewer.vychoziPohled());
+    // objednávka materiálu jako TXT (tlačítko je v záložce Nákup a nářez, ta se překresluje)
+    $('tab-spotreba').addEventListener('click', e => {
+      if (!e.target.closest('[data-akce="objednavka"]') || !posledniNarez) return;
+      const projekt = stav.nazev || 'Nový projekt';
+      const text = T.narez.objednavka(posledniNarez, { projekt, vyrobek: produkt().nazev, pocet: posledniNarez.pocet });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+      a.download = `objednavka-${projekt.replace(/[\\/:*?"<>|]/g, '_')}.txt`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+    // postavy pro měřítko (muž, žena) vedle výrobku – volba se pamatuje v prohlížeči
+    const popisPostav = () => { $('btnPostavy').textContent = T.viewer.postavyVidet() ? 'Skrýt postavy' : 'Ukázat postavy'; };
+    $('btnPostavy').addEventListener('click', () => { T.viewer.prepniPostavy(); popisPostav(); });
+    popisPostav();
 
     // menu projektu se zavře klikem mimo něj nebo po volbě akce
     document.addEventListener('click', e => {

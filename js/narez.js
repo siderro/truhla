@@ -271,7 +271,8 @@ window.Truhla = window.Truhla || {};
       return sCenou ? `<td class="c">${r.cena !== null ? cislo(r.cena) + ' Kč' : '—'}</td>` : '';
     };
 
-    let h = v.pocet > 1 ? `<p><strong>Výpočet pro ${v.pocet} výrobků najednou</strong> – díly všech kusů jsou nařezané společně.</p>` : '';
+    let h = '<p><button type="button" class="primarni" data-akce="objednavka" title="Textový soubor s kódy položek, počty, cenami a nářezovým seznamem desek – k poslání do obchodu">Stáhnout objednávku (TXT)</button></p>';
+    h += v.pocet > 1 ? `<p><strong>Výpočet pro ${v.pocet} výrobků najednou</strong> – díly všech kusů jsou nařezané společně.</p>` : '';
     h += '<table class="tabulka"><thead><tr><th>Materiál</th><th>Nákup</th><th>Detail</th>'
       + (sCenou ? '<th class="c">Cena bez DPH</th>' : '')
       + (v.zvlast ? '<th class="c">Po jednom kusu</th><th class="c">Úspora</th>' : '') + '</tr></thead><tbody>';
@@ -312,5 +313,63 @@ window.Truhla = window.Truhla || {};
     el.innerHTML = h;
   }
 
-  T.narez = { spocitej, vykresli, lamely };
+  // Objednávka jako prostý text (do e-mailu nebo k pultu): položky po dodavatelích s kódem a cenou,
+  // pod tím nářezový seznam desek pro formátování v obchodě. info = { projekt, vyrobek, pocet }
+  function objednavka(v, info) {
+    const kc = x => cislo(Math.round(x)) + ' Kč';
+    const zarovnej = (s, n, vpravo) => { s = String(s); return s.length >= n ? s : vpravo ? ' '.repeat(n - s.length) + s : s + ' '.repeat(n - s.length); };
+    const polozky = [];
+    v.desky.forEach(r => r.nakup.forEach(n => polozky.push({ f: n.format, ks: n.ks })));
+    v.rezivo.forEach(r => r.nakup.forEach(n => polozky.push({ f: n.format, ks: n.ks })));
+    const dnes = new Date().toLocaleDateString('cs-CZ');
+    const radky = [
+      `OBJEDNÁVKA MATERIÁLU – ${info.projekt}`,
+      `Výrobek: ${info.vyrobek}${info.pocet > 1 ? ` (${info.pocet} ks)` : ''}`,
+      `Datum: ${dnes}`,
+      '',
+    ];
+    const dodavatele = [...new Set(polozky.map(p => p.f.dodavatel || 'Vlastní materiál'))];
+    let celkem = 0, bezCeny = false;
+    dodavatele.forEach(d => {
+      const ps = polozky.filter(p => (p.f.dodavatel || 'Vlastní materiál') === d);
+      radky.push(`Dodavatel: ${d}`, '');
+      radky.push(`${zarovnej('Kód', 8)} ${zarovnej('Ks', 4, true)}  ${zarovnej('Položka', 64)} ${zarovnej('Cena/ks', 11, true)} ${zarovnej('Celkem', 11, true)}`);
+      radky.push('-'.repeat(102));
+      let mezisoucet = 0;
+      ps.forEach(({ f, ks }) => {
+        const c = f.cena ? f.cena * ks : null;
+        if (c !== null) mezisoucet += c; else bezCeny = true;
+        radky.push(`${zarovnej(f.kod || '—', 8)} ${zarovnej(ks, 4, true)}  ${zarovnej(f.nazev, 64)} ${zarovnej(f.cena ? kc(f.cena) : '—', 11, true)} ${zarovnej(c !== null ? kc(c) : '—', 11, true)}`);
+        if (f.puvodniNazev) radky.push(`${' '.repeat(15)}(${f.puvodniNazev})`);
+      });
+      radky.push('-'.repeat(102));
+      if (mezisoucet) radky.push(`${zarovnej(`Mezisoučet ${d} bez DPH:`, 89, true)} ${zarovnej(kc(mezisoucet), 11, true)}`);
+      radky.push('');
+      celkem += mezisoucet;
+    });
+    if (celkem) radky.push(`CELKEM BEZ DPH: ${kc(celkem)}${bezCeny ? ' (bez položek bez ceny)' : ''}`, '');
+
+    // nářezový seznam: rozměry čisté, vlákno po první délce
+    if (v.desky.length) {
+      radky.push('NÁŘEZOVÝ SEZNAM DESEK (prosím o formátování, rozměry čisté v mm, vlákno po délce)', '');
+      v.desky.forEach(r => {
+        radky.push(`${r.mat.nazev}:`);
+        const dily = new Map();
+        r.listy.forEach(l => l.kusy.forEach(k => {
+          const key = `${k.nazev}|${k.d}|${k.s}`;
+          dily.set(key, (dily.get(key) || 0) + 1);
+        }));
+        [...dily].forEach(([key, ks]) => {
+          const [nazev, d, s] = key.split('|');
+          radky.push(`  ${zarovnej(ks, 3, true)} ks  ${zarovnej(`${d} × ${s}`, 15)} ${nazev}`);
+        });
+        radky.push('');
+      });
+    }
+    const zdroj = T.materialy.zdroj();
+    if (zdroj) radky.push(`Ceny podle katalogu ${zdroj.nazev} staženého ${new Date(zdroj.stazeno).toLocaleDateString('cs-CZ')}, bez DPH – orientační, prosím o potvrzení aktuální ceny a dostupnosti.`);
+    return radky.join('\n') + '\n';
+  }
+
+  T.narez = { spocitej, vykresli, lamely, objednavka };
 })(window.Truhla);
