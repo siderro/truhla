@@ -138,7 +138,7 @@ window.Truhla = window.Truhla || {};
         return th;
       };
       const vzpery = [];
-      if (mV) {
+      if (mV && p.zavetrovani !== 'prkna') {
         const steny = [
           { nazev: 'zadní', w: sL, bok: false, z: lt - bt, znam: 1 },
           { nazev: 'přední', w: sL, bok: false, z: D - lt, znam: -1 },
@@ -166,6 +166,18 @@ window.Truhla = window.Truhla || {};
           if (vs.length) dil(`Vzpěra ${nazev}`, mV, vs[0].delka, bw, vs.length, vs.map(x => x.box), { poznamka: pozn(vs[0].th, vs[0].n) });
         }
         if (hSvetla < 2 * bw) varovani.push(`Stěna mezi luby (${zaokr(hSvetla)} mm) je na vzpěru ${bw} mm nízká – vzpěra by byla skoro vodorovná a nevyztužila by; zvol užší vzpěru nebo vyšší lavici.`);
+      } else if (mV) {
+        // výztužná prkna na stojato v kapse za deskou: pod horním lubem a na dolním (vejdou-li se obě),
+        // s lubem slepená a sešroubovaná → široký skrytý lub, čela na sraz do sloupků
+        const n = 2 * bw + 20 <= hSvetla ? 2 : 1;
+        if (bw + 20 > hSvetla) varovani.push(`Výztužné prkno ${bw} mm se mezi luby (${zaokr(hSvetla)} mm) nevejde – zvol užší prkno nebo vyšší lavici.`);
+        const ys = n > 1 ? [yH0 - bw, yL1] : [yH0 - bw];
+        const prk = (nazev, delka, boxy) => dil(nazev, mV, delka, bw, boxy.length, boxy, { poznamka:
+          `na stojato v kapse za deskou (uvnitř), ${n > 1 ? 'jedno těsně pod horním lubem, druhé na dolním' : 'těsně pod horním lubem'}; k lubu nalepit a přišroubovat skrz lub vruty á 150 mm (předvrtat), čela na sraz do sloupků + 2 vruty šikmo do sloupku z každého konce; k desce nelepit` });
+        prk('Výztužné prkno – přední a zadní', sL, ys.flatMap(y => [
+          { pos: [s, y, lt - bt], size: [sL, bw, bt] }, { pos: [s, y, D - lt], size: [sL, bw, bt] }]));
+        prk('Výztužné prkno – boční', sD, ys.flatMap(y => [
+          { pos: [lt - bt, y, s], size: [bt, bw, sD] }, { pos: [L - lt, y, s], size: [bt, bw, sD] }]));
       }
 
       // --- Sedák: zadní pevná část na lubech + přední sklopná, spojené klavírovým pantem po celé délce ---
@@ -190,7 +202,7 @@ window.Truhla = window.Truhla || {};
       const popisCep = `Čep ${cep} mm dlouhý, ${tc} mm tlustý (posunutý k drážce, ${cs(oC)} mm od vnějšího líce) a ${cs(lh - 2 * RAMENO)} mm vysoký, osazení ${RAMENO} mm nahoře a dole; ${prekryv > 0 ? `konec čepu seříznout na pokos 45° – v sloupku by se o ${cs(prekryv)} mm potkal s čepem z druhé strany (nebo čep zkrať na ${cs(cep - prekryv)} mm).` : 'čepy z obou stran se v sloupku nepotkají, konec kolmo.'}`;
       const rezCepu = prekryv > 0 ? [{ nazev: 'Nastavení řezu', sloupce: ['Řez', 'Pila – pokos', 'Pila – úkos listu', 'Rýsování bez úhloměru (posun rysky)'],
         radky: [['Konec čepu (vnitřní roh)', '45°', '0°', `na čele čepu odměř ${cs(Math.min(tc, prekryv + 2))} mm z obou stran rohu`]] }] : [];
-      const popisDr = kde => `Drážka pro stěnu ${kde}: ${cs(gw)} mm široká, ${hd} mm hluboká, ${cs(oG)} mm od vnějšího líce (${mV ? `za ní uvnitř kapsa ${bt} mm pro vzpěru` : 'uprostřed'}), po celé délce – vyjde v čepu.`;
+      const popisDr = kde => `Drážka pro stěnu ${kde}: ${cs(gw)} mm široká, ${hd} mm hluboká, ${cs(oG)} mm od vnějšího líce (${mV ? `za ní uvnitř kapsa ${bt} mm pro ${p.zavetrovani === 'prkna' ? 'výztužné prkno' : 'vzpěru'}` : 'uprostřed'}), po celé délce – vyjde v čepu.`;
       for (const [nazev, sv] of [['přední a zadní', sL], ['boční', sD]]) {
         const W = sv + 2 * cep;
         vykresy.push({
@@ -258,29 +270,25 @@ window.Truhla = window.Truhla || {};
         });
       }
 
-      const kapsa = mV ? ` · vzpěry ${bt} × ${bw} mm uvnitř za deskou` : '';
+      const kapsa = mV ? ` · ${p.zavetrovani === 'prkna' ? 'výztužná prkna' : 'vzpěry'} ${bt} × ${bw} mm uvnitř za deskou` : '';
       const objem = (L - 2 * lt) * (D - 2 * lt) * (yS - yDno - Td) / 1e6;
       const souhrn = `${zaokr(sedD)} × ${zaokr(sedS)} × ${zaokr(H)} mm (D × H × V) · rám ${s} × ${s} mm na čep a dlab · úložný prostor ≈ ${Math.round(objem)} l${kapsa} · kování: klavírový pant ${zaokr(sedD)} mm, nůžkový výklopník`;
       return { dily, varovani, souhrn, vykresy };
     },
   };
 
-  // Jednodušší varianta: bez šikmých vzpěr, tuhost dávají široké luby z fošen na čep a dlab (pravoúhlý rám).
-  // Drážky pro stěny uprostřed lubů, jinak stejná konstrukce i výkresy.
+  // Jednodušší varianta: místo šikmých vzpěr pravoúhlá výztužná prkna na stojato, skrytá v kapse za deskou
+  // a slepená s luby (široký skrytý lub). Zvenku stejný vzhled, odpadají šikmé řezy.
   const zakl = T.produkty['lavice-ram'];
   T.produkty['lavice-ram-prkna'] = {
     id: 'lavice-ram-prkna',
-    nazev: 'Lavice rámová – široké luby z prken, bez vzpěr',
+    nazev: 'Lavice rámová – skrytá výztužná prkna místo vzpěr',
     predvolby: zakl.predvolby,
     parametry: zakl.parametry
-      .filter(x => x.klic !== 'zavetrovani' && x.klic !== 'matVzpera')
-      .map(x => x.klic === 'matLub' ? Object.assign({}, x, { nazev: 'Luby (prkno / fošna na stojato)', vychozi: 'demos-308043' }) : x),
+      .filter(x => x.klic !== 'zavetrovani')
+      .map(x => x.klic === 'matVzpera' ? Object.assign({}, x, { nazev: 'Výztužná prkna (na stojato)', vychozi: 'demos-305364', kdyz: undefined }) : x),
     generuj(p, M) {
-      const r = zakl.generuj(Object.assign({}, p, { zavetrovani: 'zadne' }), M);
-      const mL = M.najdi(p.matLub);
-      if (mL && (mL.sirka || 0) < 100) r.varovani.push(`Lub ${mL.sirka} mm je na rám bez vzpěr úzký – tuhost dává šířka lubu a délka čepu; zvol prkno nebo fošnu aspoň 100 mm.`);
-      r.souhrn = r.souhrn.replace('na čep a dlab', 'a široké luby na čep a dlab, bez vzpěr');
-      return r;
+      return zakl.generuj(Object.assign({}, p, { zavetrovani: 'prkna' }), M);
     },
   };
 })(window.Truhla);
