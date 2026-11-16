@@ -229,8 +229,13 @@ window.Truhla = window.Truhla || {};
       // trup, bříško, kostky na košili, opasek
       kapsle([0, kycel + 0.06, 0], [0, rameno - 0.05, 0], 0.1, KOSILE, 0.66);
       koule([0, 0.575, 0.04], 0.1, KOSILE, [1.05, 0.95, 0.85]);
-      for (const y of [0.53, 0.6, 0.67]) kvadr([0, y, 0.0], [0.214, 0.012, 0.14], KOSTKA);
-      for (const x of [-0.05, 0, 0.05]) kvadr([x, 0.62, 0.065], [0.01, 0.18, 0.1], KOSTKA);
+      // knoflíky přes bříško (po povrchu koule)
+      for (const y of [0.52, 0.57, 0.62, 0.67]) {
+        const dy = (y - 0.575) / (0.1 * 0.95);
+        koule([0, y, 0.04 + 0.1 * 0.85 * Math.sqrt(Math.max(0, 1 - dy * dy))], 0.007, KOSTKA);
+      }
+      kvadr([-0.055, 0.7, 0.062], [0.045, 0.004, 0.02], KOSTKA, [0.3, 0, 0]);                // kapsička na prsou
+      kvadr([-0.055, 0.68, 0.064], [0.045, 0.04, 0.004], KOSILE);
       valec([0, kycel + 0.01, 0], [0, kycel + 0.045, 0], 0.104, TMAVA).scale.z = 0.72;      // opasek
       kvadr([0, kycel + 0.028, 0.076], [0.04, 0.03, 0.012], '#d4a73a');                    // přezka
       kvadr([0.085, kycel - 0.02, 0.055], [0.06, 0.07, 0.03], '#8a5a30', [0, 0.5, 0]);     // kapsa na nářadí
@@ -278,7 +283,7 @@ window.Truhla = window.Truhla || {};
       });
       kapsle([0, rameno, 0], [0, 0.81, 0], 0.025, KUZE);                                       // krk
       kapsle([-sx, rameno - 0.01, 0], [sx, rameno - 0.01, 0], 0.03, TRICKO, 0.8);            // ramena
-      koule([0, kycel, 0], 0.1, LACL, [1.08, 0.6, 0.72]);
+      koule([0, kycel, 0], 0.092, LACL, [1.1, 0.55, 0.62]);
       [-1, 1].forEach(s => {
         kapsle([s * nohaX, 0.065, 0], [s * nohaX, kycel, 0], rn, LACL);
         kapsle([s * nohaX, 0.04, 0], [s * nohaX, 0.06, 0], rn * 0.75, KUZE);                  // kotník
@@ -293,9 +298,11 @@ window.Truhla = window.Truhla || {};
       kapsle([-sx, rameno - 0.01, 0], [-sx - 0.025, 0.6, 0.02], ra, TRICKO);
       kapsle([-sx - 0.025, 0.6, 0.02], [-sx - 0.025, 0.56, 0.12], ra * 0.9, KUZE);
       koule([-sx - 0.025, 0.56, 0.14], 0.022, KUZE);
+      // metr trčí z ruky dopředu a nahoru, články cikcak s černými dílky
       for (let i = 0; i < 4; i++) {
-        const y0 = 0.56 + i * 0.075;
-        kvadr([-sx - 0.025 + (i % 2 ? 0.02 : -0.02), y0 + 0.037, 0.15], [0.012, 0.08, 0.004], METR, [0, 0, i % 2 ? 0.5 : -0.5]);
+        const y = 0.6 + i * 0.07, z = 0.17 + i * 0.03, x = -sx - 0.025 + (i % 2 ? 0.022 : -0.022);
+        kvadr([x, y, z], [0.022, 0.085, 0.006], METR, [-0.4, 0, i % 2 ? 0.55 : -0.55]);
+        for (const d of [-0.025, 0, 0.025]) kvadr([x, y + d, z + 0.004], [0.012, 0.003, 0.002], TMAVA, [-0.4, 0, i % 2 ? 0.55 : -0.55]);
       }
     }
     g.userData.sirka = u(muz ? 0.36 : 0.36);
