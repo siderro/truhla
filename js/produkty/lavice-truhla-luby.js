@@ -100,9 +100,9 @@ window.Truhla = window.Truhla || {};
         { matCelo: SMRK, matViko: SMRK, matBok: OSB18, matZada: OSB12, matDno: OSB12, matSokl: OSB18 }),
     ],
     parametry: [
-      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', typ: 'cislo', min: 400, max: 2500, krok: 10, vychozi: 1200 },
+      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka', typ: 'cislo', min: 400, max: 2500, krok: 10, vychozi: 1340 },
       { klic: 'hloubka', nazev: 'Hloubka', typ: 'cislo', min: 250, max: 800, krok: 10, vychozi: 400 },
-      { klic: 'vyska', nazev: 'Výška sedáku (vč. víka)', typ: 'cislo', min: 250, max: 700, krok: 5, vychozi: 450 },
+      { klic: 'vyska', nazev: 'Výška sedáku (vč. víka)', typ: 'cislo', min: 250, max: 700, krok: 5, vychozi: 480 },
       { klic: 'sokl', nazev: 'Sokl', typ: 'prepinac', vychozi: true },
 
       // dno zůstává z OSB: masivní dno by v drážce pracovalo (bobtná napříč vláknem)
@@ -127,7 +127,7 @@ window.Truhla = window.Truhla || {};
       { pokrocile: true, klic: 'lubHloubka', nazev: 'Tloušťka lubu (od stěny)', typ: 'cislo', min: 15, max: 100, krok: 1, vychozi: 40, kdyz: p => !jeDeska(p.matLub) },
 
       { skupina: 'Víko', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 40, max: 400, krok: 5, vychozi: 120 },
-      { klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 20 },
+      { klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
       { klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 10 },
 
       { skupina: 'Sokl', pokrocile: true, klic: 'soklVyska', nazev: 'Výška soklu', typ: 'cislo', min: 30, max: 200, krok: 5, vychozi: 80, kdyz: p => p.sokl },

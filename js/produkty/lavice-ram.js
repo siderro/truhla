@@ -24,9 +24,9 @@ window.Truhla = window.Truhla || {};
       Object.assign(sadaDreva(['matSedak']), { skupina: 'Sedák' }),
     ],
     parametry: [
-      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka (rám)', typ: 'cislo', min: 500, max: 2500, krok: 10, vychozi: 1100 },
-      { klic: 'hloubka', nazev: 'Hloubka (rám)', typ: 'cislo', min: 300, max: 700, krok: 10, vychozi: 420 },
-      { klic: 'vyska', nazev: 'Výška sedáku (vč. desky)', typ: 'cislo', min: 300, max: 700, krok: 5, vychozi: 450 },
+      { skupina: 'Rozměry', klic: 'delka', nazev: 'Délka (rám)', typ: 'cislo', min: 500, max: 2500, krok: 10, vychozi: 1340 },
+      { klic: 'hloubka', nazev: 'Hloubka (rám)', typ: 'cislo', min: 300, max: 700, krok: 10, vychozi: 400 },
+      { klic: 'vyska', nazev: 'Výška sedáku (vč. desky)', typ: 'cislo', min: 300, max: 700, krok: 5, vychozi: 480 },
       { klic: 'zavetrovani', nazev: 'Zavětrování', typ: 'volba', vychozi: 'vsechny',
         moznosti: [['vsechny', 'Šikmé vzpěry uvnitř všech stěn'], ['bokyZada', 'Jen boky a záda (vpředu víc místa uvnitř)'], ['zadne', 'Bez vzpěr']] },
       { pokrocile: true, klic: 'nozky', nazev: 'Dolní lub nad podlahou', typ: 'cislo', min: 0, max: 200, krok: 5, vychozi: 50 },
@@ -43,7 +43,7 @@ window.Truhla = window.Truhla || {};
       { pokrocile: true, klic: 'cepDelka', nazev: 'Délka čepu lubu', typ: 'cislo', min: 15, max: 50, krok: 1, vychozi: 30 },
 
       { skupina: 'Sedák', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 60, max: 400, krok: 5, vychozi: 120 },
-      { pokrocile: true, klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 20 },
+      { pokrocile: true, klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
       { pokrocile: true, klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 15 },
     ],
 
