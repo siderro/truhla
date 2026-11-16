@@ -10,9 +10,9 @@ window.Truhla = window.Truhla || {};
   let postavy = null, postavyVidet = true;
   const KLIC_POSTAVY = 'truhla.postavy.v1';
   try { postavyVidet = localStorage.getItem(KLIC_POSTAVY) !== '0'; } catch (e) { /* bez úložiště */ }
-  // figurína pro měřítko (výška k temeni přesně): stojí vlevo od výrobku
+  // silueta pro měřítko (výška k temeni přesně): stojí vlevo od výrobku
   const POSTAVY = [
-    { nazev: 'figurína', vyska: 1800 },
+    { nazev: 'silueta člověka', vyska: 1800 },
   ];
 
   const css = (nazev, vychozi) => getComputedStyle(document.documentElement).getPropertyValue(nazev).trim() || vychozi;
@@ -155,72 +155,26 @@ window.Truhla = window.Truhla || {};
     if (data.klic !== posledni) { vychoziPohled(); posledni = data.klic; }
   }
 
-  // Kloubová dřevěná figurína (jako výtvarnický panáček) v životní velikosti: kulové klouby, zúžené
-  // údy, uvolněný postoj (váha na pravé noze). Chodidla na zemi, čelem dopředu (+z), pravá ruka na −x.
-  // Rozměry jako podíl výšky H (k temeni); vrací skupinu v metrech.
-  function figurina(f) {
+  // Silueta člověka pro měřítko: plochá deska 10 mm (jako postavička v architektonickém výkresu), temeno
+  // přesně v H, chodidla na zemi, čelem dopředu (+z). Obrys jako podíl výšky H; vrací skupinu v metrech.
+  function silueta(f) {
     const H = f.vyska * MM, g = new THREE.Group(), u = k => k * H;
-    const DREVO = new THREE.MeshStandardMaterial({ color: '#dcbc8e', roughness: 0.55 });
-    const KLOUB = new THREE.MeshStandardMaterial({ color: '#c79c68', roughness: 0.5 });
-    const V = (...p) => new THREE.Vector3(...p.map(u));
-    const pridej = (geo, mat, pos, rot) => {
-      const m = new THREE.Mesh(geo, mat);
-      m.position.copy(pos);
-      if (rot) m.quaternion.copy(rot);
-      g.add(m);
-      return m;
-    };
-    // vejce/elipsoid: střed, poloosy, natočení (Euler)
-    const elipsoid = (p, r, mat = DREVO, e = [0, 0, 0]) => {
-      const m = pridej(new THREE.SphereGeometry(1, 32, 20), mat, V(...p), new THREE.Quaternion().setFromEuler(new THREE.Euler(...e)));
-      m.scale.set(...r.map(u));
-      return m;
-    };
-    const kloub = (p, r) => elipsoid(p, [r, r, r], KLOUB);
-    // zúžený úd z bodu a (poloměr ra) do b (rb), konce zaoblené kloubem
-    const ud = (a, b, ra, rb) => {
-      const A = V(...a), B = V(...b), smer = B.clone().sub(A);
-      const geo = new THREE.CylinderGeometry(u(rb), u(ra), smer.length(), 28, 1);
-      return pridej(geo, DREVO, A.clone().add(B).multiplyScalar(0.5), new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), smer.normalize()));
-    };
-
-    // hlava (vejce, temeno přesně v H) a krk
-    elipsoid([0, 0.934, 0.004], [0.05, 0.066, 0.058], DREVO, [0.12, 0, 0]);
-    ud([0, 0.835, -0.004], [0, 0.885, 0.002], 0.024, 0.021);
-    kloub([0, 0.838, -0.004], 0.026);
-    // trup: hrudník, břicho, pánev – mírně proti sobě natočené (kontrapost)
-    elipsoid([0, 0.74, 0], [0.1, 0.098, 0.064], DREVO, [0, 0.04, 0.025]);
-    kloub([0, 0.655, 0.002], 0.04);
-    elipsoid([0, 0.615, 0.004], [0.074, 0.05, 0.054], DREVO, [0, 0, 0.01]);
-    kloub([0, 0.575, 0.004], 0.042);
-    elipsoid([0, 0.53, 0], [0.09, 0.055, 0.062], DREVO, [0, -0.04, -0.03]);
-
-    // paže: rameno – loket – zápěstí – dlaň (pravá volně, levá mírně pokrčená)
-    const paze = (s, loket, zap, dlan) => {
-      const ram = [s * 0.106, 0.795, 0];
-      kloub(ram, 0.03);
-      ud(ram, loket, 0.026, 0.02);
-      kloub(loket, 0.021);
-      ud(loket, zap, 0.019, 0.014);
-      kloub(zap, 0.014);
-      elipsoid(dlan, [0.013, 0.045, 0.03], DREVO, [0, 0, s * 0.08]);
-    };
-    paze(-1, [-0.126, 0.632, -0.005], [-0.136, 0.49, 0.012], [-0.139, 0.448, 0.016]);
-    paze(1, [0.128, 0.63, -0.02], [0.118, 0.495, 0.05], [0.114, 0.453, 0.06]);
-
-    // nohy: kyčel – koleno – kotník – chodidlo (pravá nese váhu, levá pokrčená a vytočená)
-    const noha = (s, kycel, koleno, kotnik, chodidlo, natoceni) => {
-      kloub(kycel, 0.036);
-      ud(kycel, koleno, 0.036, 0.026);
-      kloub(koleno, 0.027);
-      ud(koleno, kotnik, 0.026, 0.017);
-      kloub(kotnik, 0.018);
-      elipsoid(chodidlo, [0.026, 0.017, 0.062], DREVO, [0, natoceni, 0]);
-    };
-    noha(-1, [-0.05, 0.5, 0], [-0.052, 0.285, 0.006], [-0.054, 0.05, 0], [-0.055, 0.019, 0.034], -0.05);
-    noha(1, [0.05, 0.492, 0], [0.068, 0.285, 0.04], [0.085, 0.056, -0.004], [0.092, 0.02, 0.03], 0.35);
-
-    g.userData.sirka = u(0.34);
+    const MAT = new THREE.MeshStandardMaterial({ color: '#5b6470', roughness: 0.7 });
+    // pravá polovina obrysu od krku dolů k rozkroku, levá zrcadlově
+    const P = [[0, 0.88], [0.028, 0.88], [0.032, 0.83], [0.105, 0.815], [0.132, 0.785], [0.14, 0.6], [0.146, 0.445],
+      [0.13, 0.425], [0.114, 0.46], [0.108, 0.74], [0.098, 0.74], [0.084, 0.62], [0.094, 0.5], [0.09, 0.04], [0.105, 0.012], [0.1, 0],
+      [0.022, 0], [0.02, 0.04], [0.006, 0.47], [0, 0.47]];
+    const obrys = P.concat(P.slice(1, -1).reverse().map(([x, y]) => [-x, y]));
+    const tvar = new THREE.Shape(obrys.map(([x, y]) => new THREE.Vector2(u(x), u(y))));
+    const hlava = new THREE.Shape();
+    hlava.absellipse(0, u(0.935), u(0.055), u(0.065), 0, Math.PI * 2);
+    const tl = 10 * MM;
+    for (const t of [tvar, hlava]) {
+      const geo = new THREE.ExtrudeGeometry(t, { depth: tl, bevelEnabled: false, curveSegments: 32 });
+      geo.translate(0, 0, -tl / 2);
+      g.add(new THREE.Mesh(geo, MAT));
+    }
+    g.userData.sirka = u(0.3);
     return g;
   }
 
@@ -230,7 +184,7 @@ window.Truhla = window.Truhla || {};
     postavy = new THREE.Group();
     let x = xLevy - 0.35;
     POSTAVY.slice().reverse().forEach(f => {
-      const fig = figurina(f);
+      const fig = silueta(f);
       fig.rotation.y = 0.25;                       // natočení k výrobku
       fig.position.x = x - fig.userData.sirka / 2;
       x -= fig.userData.sirka + 0.25;

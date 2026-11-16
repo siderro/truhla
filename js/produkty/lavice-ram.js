@@ -264,4 +264,23 @@ window.Truhla = window.Truhla || {};
       return { dily, varovani, souhrn, vykresy };
     },
   };
+
+  // Jednodušší varianta: bez šikmých vzpěr, tuhost dávají široké luby z fošen na čep a dlab (pravoúhlý rám).
+  // Drážky pro stěny uprostřed lubů, jinak stejná konstrukce i výkresy.
+  const zakl = T.produkty['lavice-ram'];
+  T.produkty['lavice-ram-prkna'] = {
+    id: 'lavice-ram-prkna',
+    nazev: 'Lavice rámová – široké luby z prken, bez vzpěr',
+    predvolby: zakl.predvolby,
+    parametry: zakl.parametry
+      .filter(x => x.klic !== 'zavetrovani' && x.klic !== 'matVzpera')
+      .map(x => x.klic === 'matLub' ? Object.assign({}, x, { nazev: 'Luby (prkno / fošna na stojato)', vychozi: 'demos-308043' }) : x),
+    generuj(p, M) {
+      const r = zakl.generuj(Object.assign({}, p, { zavetrovani: 'zadne' }), M);
+      const mL = M.najdi(p.matLub);
+      if (mL && (mL.sirka || 0) < 100) r.varovani.push(`Lub ${mL.sirka} mm je na rám bez vzpěr úzký – tuhost dává šířka lubu a délka čepu; zvol prkno nebo fošnu aspoň 100 mm.`);
+      r.souhrn = r.souhrn.replace('na čep a dlab', 'a široké luby na čep a dlab, bez vzpěr');
+      return r;
+    },
+  };
 })(window.Truhla);
