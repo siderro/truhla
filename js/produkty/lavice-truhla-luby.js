@@ -128,7 +128,7 @@ window.Truhla = window.Truhla || {};
 
       { skupina: 'Víko', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 40, max: 400, krok: 5, vychozi: 120 },
       { klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
-      { klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 10 },
+      { klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
 
       { skupina: 'Sokl', pokrocile: true, klic: 'soklVyska', nazev: 'Výška soklu', typ: 'cislo', min: 30, max: 200, krok: 5, vychozi: 80, kdyz: p => p.sokl },
       { pokrocile: true, klic: 'soklOdsazeni', nazev: 'Odsazení soklu', typ: 'cislo', min: 0, max: 100, krok: 1, vychozi: 30, kdyz: p => p.sokl },

@@ -44,7 +44,7 @@ window.Truhla = window.Truhla || {};
 
       { skupina: 'Sedák', pokrocile: true, klic: 'vikoPevna', nazev: 'Hloubka pevné zadní části', typ: 'cislo', min: 60, max: 400, krok: 5, vychozi: 120 },
       { pokrocile: true, klic: 'presahPredni', nazev: 'Přesah vpředu', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 50 },
-      { pokrocile: true, klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 15 },
+      { pokrocile: true, klic: 'presahBoky', nazev: 'Přesah na bocích', typ: 'cislo', min: 0, max: 60, krok: 1, vychozi: 0 },
     ],
 
     generuj(p, M) {
