@@ -483,8 +483,8 @@ window.Truhla = window.Truhla || {};
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
-    // postavy pro měřítko (muž, žena) vedle výrobku – volba se pamatuje v prohlížeči
-    const popisPostav = () => { $('btnPostavy').textContent = T.viewer.postavyVidet() ? 'Skrýt postavy' : 'Ukázat postavy'; };
+    // figurína člověka pro měřítko vedle výrobku – volba se pamatuje v prohlížeči
+    const popisPostav = () => { $('btnPostavy').textContent = T.viewer.postavyVidet() ? 'Skrýt postavu' : 'Ukázat postavu'; };
     $('btnPostavy').addEventListener('click', () => { T.viewer.prepniPostavy(); popisPostav(); });
     popisPostav();
 
