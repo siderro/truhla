@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Truhlářský plánovač</title>
+<link rel="stylesheet" href="css/styl.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<header class="lista">
+  <h1>Truhlářský plánovač</h1>
+  <div class="projekt">
+    <input id="nazevProjektu" placeholder="Název projektu" aria-label="Název projektu">
+    <button id="btnUlozit" class="primarni">Uložit</button>
+    <select id="seznamProjektu" aria-label="Uložené projekty"><option value="">— uložené projekty —</option></select>
+    <button id="btnNovy">Nový</button>
+    <details class="menu">
+      <summary class="tlacitko" title="Další akce s projekty">⋯</summary>
+      <div class="menu-obsah">
+        <button id="btnExport" title="Stáhnout projekt jako JSON">Export do souboru</button>
+        <label class="tlacitko" title="Načíst projekt z JSON">Import ze souboru<input type="file" id="importSoubor" accept=".json,application/json" hidden></label>
+        <button id="btnSmazat" title="Smazat vybraný projekt">Smazat vybraný projekt</button>
+      </div>
+    </details>
+  </div>
+</header>
+
+<main>
+  <aside id="panel">
+    <label class="vyber-produktu">Výrobek
+      <select id="produkt"></select>
+    </label>
+    <p id="zdrojDat" class="zdroj"></p>
+    <div id="formular"></div>
+  </aside>
+
+  <section class="obsah">
+    <div class="nahled">
+      <div id="scena"></div>
+      <div class="nahled-ovladani">
+        <button id="btnViko">Otevřít víko</button>
+        <button id="btnPohled">Výchozí pohled</button>
+      </div>
+      <div id="rozmery" class="stitek"></div>
+      <div id="scenaHlaska" class="hlaska" hidden></div>
+    </div>
+    <div id="souhrnVyroby" class="souhrn-vyroby"></div>
+    <div id="varovani"></div>
+    <nav class="zalozky">
+      <button data-tab="kusovnik" class="aktivni">Kusovník</button>
+      <button data-tab="spotreba">Nákup a nářez</button>
+      <button data-tab="cepy">Výkresy – čepy a šikmé řezy</button>
+      <button data-tab="knihovna">Materiály a nastavení</button>
+    </nav>
+    <div id="tab-kusovnik" class="tab aktivni"></div>
+    <div id="tab-spotreba" class="tab"></div>
+    <div id="tab-cepy" class="tab"></div>
+    <div id="tab-knihovna" class="tab"></div>
+  </section>
+</main>
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/katalog-demos.js"></script>
+<script src="js/materialy.js"></script>
+<script src="js/produkty/lavice-truhla.js"></script>
+<script src="js/produkty/lavice-truhla-luby.js"></script>
+<script src="js/produkty/drevnik.js"></script>
+<script src="js/produkty/koza.js"></script>
+<script src="js/produkty/lavice-ram.js"></script>
+<script src="js/narez.js"></script>
+<script src="js/kusovnik.js"></script>
+<script src="js/cepy.js"></script>
+<script src="js/ulozeni.js"></script>
+<script src="js/viewer3d.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+  window.Truhla.THREE = THREE;
+  window.Truhla.OrbitControls = OrbitControls;
+  window.Truhla.ConvexGeometry = ConvexGeometry;
+  window.Truhla.viewer.start();
+</script>
+</body>
+</html>
